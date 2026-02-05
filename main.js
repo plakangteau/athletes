@@ -75,23 +75,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const mockResults = {
         '배드민턴선수 상': {
             description: '빠른 순발력과 정교한 컨트롤로 셔틀콕을 지배하는 당신은 네트의 지배자!',
-            athlete: 'images/badminton.png'
+            athlete: '/images/badminton.png'
         },
         '탁구선수 상': {
             description: '순간적인 반응 속도와 회전 마술을 부리는 당신은 작은 테이블 위의 거인!',
-            athlete: 'images/ping-pong.png'
+            athlete: '/images/ping-pong.png'
         },
         '골프선수 상': {
             description: '고요한 집중력과 완벽한 스윙으로 필드를 정복하는 당신은 녹색의 신사!',
-            athlete: 'images/golf.png'
+            athlete: '/images/golf.png'
         },
         '테니스선수 상': {
             description: '강력한 서브와 지치지 않는 체력으로 코트를 누비는 당신은 테니스의 황제!',
-            athlete: 'images/tennis.png'
+            athlete: '/images/tennis.png'
         },
         '육상선수 상': {
             description: '바람을 가르는 스피드와 한계를 넘어서는 의지를 가진 당신은 트랙의 전설!',
-            athlete: 'images/track-and-field.png'
+            athlete: '/images/track-and-field.png'
         }
     };
 
@@ -147,8 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 analyzeButton.disabled = false;
                 analyzeButton.textContent = '분석하기';
             };
-            img.onerror = () => {
-                 initialMessage.textContent = "결과 이미지를 불러오는데 실패했습니다.";
+            img.onerror = (e) => {
+                 console.error("Error loading image:", img.src, e);
+                 initialMessage.textContent = "결과 이미지를 불러오는데 실패했습니다. 이미지 경로를 확인해주세요.";
                  initialMessage.style.display = 'block';
                  analyzeButton.disabled = false;
                  analyzeButton.textContent = '분석하기';
