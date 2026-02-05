@@ -1,46 +1,150 @@
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const uploadedImage = document.getElementById('uploaded-image');
+    const imageUpload = document.getElementById('imageUpload');
     const analyzeButton = document.getElementById('analyze-button');
     const resultCard = document.getElementById('result-card');
     const initialMessage = document.getElementById('initial-message');
-    const resultImage = document.getElementById('result-image');
+    const athleteImage = document.getElementById('athlete-image');
     const resultAthleteType = document.getElementById('result-athlete-type');
     const resultDescription = document.getElementById('result-description');
+    const themeSwitch = document.getElementById('theme-switch');
+    const themeLabel = document.querySelector('.theme-label');
 
-    // 모의 데이터 (실제 분석 로직으로 교체 예정)
-    const mockResults = [
-        {
-            type: '축구선수 상',
-            description: '넓은 시야와 빠른 판단력을 가진 당신은 그라운드의 지배자!',
-            image: 'https://images.unsplash.com/photo-1553778263-73a83bab9b82?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-        },
-        {
-            type: '농구선수 상',
-            description: '높은 점프력과 정확한 슛 감각을 지닌 당신은 코트의 해결사!',
-            image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-        },
-        {
-            type: '수영선수 상',
-            description: '유연한 몸과 강한 지구력을 가진 당신은 물살을 가르는 돌고래!',
-            image: 'https://images.unsplash.com/photo-1560093849-53fe1a8c9193?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+    // --- Theme Switcher ---
+    function set_theme(dark) {
+        document.body.classList.toggle('dark-mode', dark);
+        document.body.classList.toggle('light-mode', !dark);
+        themeLabel.textContent = dark ? '다크 모드' : '라이트 모드';
+        themeSwitch.checked = dark;
+    }
+
+    themeSwitch.addEventListener('change', () => {
+        set_theme(themeSwitch.checked);
+    });
+    // Set initial theme to dark
+    set_theme(true);
+
+    // --- Face-API Initialization ---
+    Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+        faceapi.nets.faceExpressionNet.loadFromUri('/models')
+    ]).then(startVideo);
+
+    // --- Media Handling ---
+    function startVideo() {
+        video.style.display = 'block';
+        uploadedImage.style.display = 'none';
+        navigator.mediaDevices.getUserMedia({ video: {} })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing webcam: ", err);
+                initialMessage.textContent = "웹캠에 접근할 수 없습니다. 권한을 확인해주세요.";
+            });
+    }
+
+    imageUpload.addEventListener('change', async () => {
+        if (imageUpload.files && imageUpload.files[0]) {
+            // Stop video stream if it's running
+            if (video.srcObject) {
+                const stream = video.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImage.src = e.target.result;
+                video.style.display = 'none';
+                uploadedImage.style.display = 'block';
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); // Clear previous drawings
+            };
+            reader.readAsDataURL(imageUpload.files[0]);
         }
-    ];
+    });
 
-    analyzeButton.addEventListener('click', () => {
-        // 로딩 메시지 (필요 시 추가)
+    video.addEventListener('play', () => {
+        const displaySize = { width: video.clientWidth, height: video.clientHeight };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        setInterval(async () => {
+            if (video.style.display !== 'none') {
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                faceapi.draw.drawDetections(canvas, resizedDetections);
+            }
+        }, 100);
+    });
+
+    // --- Mock Analysis Data ---
+    const mockResults = {
+        '축구선수 상': {
+            description: '넓은 시야와 빠른 판단력을 가진 당신은 그라운드의 지배자!',
+            athlete: 'https://i.namu.wiki/i/Plt-TEaF_9aI1Yk2j2aJm2_S0GSAHl2o7p0Jp3z2QjY2jZgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJg.webp'
+        },
+        '농구선수 상': {
+            description: '높은 점프력과 정확한 슛 감각을 지닌 당신은 코트의 해결사!',
+            athlete: 'https://i.namu.wiki/i/250px-stephen_curry_2022_finals.jpeg' 
+        },
+        '수영선수 상': {
+            description: '유연한 몸과 강한 지구력을 가진 당신은 물살을 가르는 돌고래!',
+            athlete: 'https://i.namu.wiki/i/220px-michael_phelps_london_2012.jpeg'
+        }
+    };
+
+    // --- "Analyze" Button Logic ---
+    analyzeButton.addEventListener('click', async () => {
         initialMessage.style.display = 'none';
         resultCard.classList.add('hidden');
 
-        // 임의의 결과 선택 (모의)
-        const randomIndex = Math.floor(Math.random() * mockResults.length);
-        const randomResult = mockResults[randomIndex];
+        let elementToAnalyze = video.style.display !== 'none' ? video : uploadedImage;
 
-        // 결과 표시
-        setTimeout(() => {
-            resultImage.src = randomResult.image;
-            resultAthleteType.textContent = randomResult.type;
-            resultDescription.textContent = randomResult.description;
-            resultCard.classList.remove('hidden');
-        }, 1000); // 1초 지연으로 분석하는 듯한 효과
+        // Ensure image is loaded before analysis
+        if (elementToAnalyze.tagName === 'IMG' && !elementToAnalyze.complete) {
+             await new Promise(resolve => elementToAnalyze.onload = resolve);
+        }
+
+        const detections = await faceapi.detectSingleFace(elementToAnalyze, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+
+        if (detections) {
+            const expressions = detections.expressions;
+            const dominantExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+
+            let resultType;
+            switch (dominantExpression) {
+                case 'happy':
+                case 'surprised':
+                    resultType = '농구선수 상';
+                    break;
+                case 'neutral':
+                case 'sad':
+                    resultType = '축구선수 상';
+                    break;
+                default:
+                    resultType = '수영선수 상';
+            }
+
+            const result = mockResults[resultType];
+
+            // Show results with a small delay
+            setTimeout(() => {
+                athleteImage.src = result.athlete;
+                resultAthleteType.textContent = resultType;
+                resultDescription.textContent = result.description;
+                resultCard.classList.remove('hidden');
+            }, 500); 
+
+        } else {
+            initialMessage.textContent = "얼굴을 찾을 수 없습니다. 다른 사진이나 각도를 시도해보세요.";
+            initialMessage.style.display = 'block';
+        }
     });
 });

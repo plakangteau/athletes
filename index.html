@@ -7,6 +7,7 @@
     <title>어떤 운동선수 상일까?</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script defer src="face-api.min.js"></script>
 </head>
 <body>
     <header>
@@ -20,6 +21,7 @@
                 <h2>얼굴 인식</h2>
                 <div class="video-container">
                     <video id="video" width="600" height="450" autoplay muted></video>
+                    <canvas id="canvas"></canvas>
                 </div>
                 <div class="upload-container">
                     <p>또는, 사진을 업로드하세요</p>
