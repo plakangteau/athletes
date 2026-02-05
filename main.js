@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('canvas');
     const uploadedImage = document.getElementById('uploaded-image');
     const imageUpload = document.getElementById('imageUpload');
+    const fileName = document.getElementById('file-name');
     const analyzeButton = document.getElementById('analyze-button');
     const resultCard = document.getElementById('result-card');
     const initialMessage = document.getElementById('initial-message');
@@ -24,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     themeSwitch.addEventListener('change', () => {
         setTheme(themeSwitch.checked);
     });
-    // Set initial theme based on checkbox
     setTheme(themeSwitch.checked);
 
     // --- Face-API Initialization ---
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Media Handling ---
     function startMedia() {
-        startVideo(); // Default to webcam
+        startVideo();
     }
 
     function startVideo() {
@@ -57,29 +57,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.srcObject = stream;
             })
             .catch(err => {
-                console.error("Error accessing webcam: ", err);
-                initialMessage.textContent = "웹캠에 접근할 수 없습니다. 권한을 확인해주세요.";
+                console.error("Error accessing camera: ", err);
+                initialMessage.textContent = "카메라에 접근할 수 없습니다. 권한을 확인해주세요.";
             });
     }
 
     imageUpload.addEventListener('change', async () => {
         if (imageUpload.files && imageUpload.files[0]) {
-            // Stop video stream if it's running
             if (video.srcObject) {
                 const stream = video.srcObject;
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
                 video.srcObject = null;
             }
+            
+            fileName.textContent = imageUpload.files[0].name;
 
             const reader = new FileReader();
             reader.onload = (e) => {
                 uploadedImage.src = e.target.result;
                 video.style.display = 'none';
                 uploadedImage.style.display = 'block';
-                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); // Clear previous drawings
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
             };
             reader.readAsDataURL(imageUpload.files[0]);
+        } else {
+             fileName.textContent = '선택된 파일 없음';
         }
     });
 
@@ -97,19 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     });
 
-    // --- Mock Analysis Data ---
+    // --- Mock Analysis Data with Cartoon Images ---
     const mockResults = {
         '축구선수 상': {
             description: '넓은 시야와 빠른 판단력을 가진 당신은 그라운드의 지배자!',
-            athlete: 'https://i.namu.wiki/i/Plt-TEaF_9aI1Yk2j2aJm2_S0GSAHl2o7p0Jp3z2QjY2jZgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJg.webp' // Son Heung-min
+            athlete: 'https://cdn.pixabay.com/photo/2020/03/10/18/14/soccer-4920032_960_720.png' 
         },
         '농구선수 상': {
             description: '높은 점프력과 정확한 슛 감각을 지닌 당신은 코트의 해결사!',
-            athlete: 'https://i.namu.wiki/i/250px-stephen_curry_2022_finals.jpeg' // Stephen Curry
+            athlete: 'https://cdn.pixabay.com/photo/2013/07/12/17/44/basketball-152295_960_720.png'
         },
         '수영선수 상': {
             description: '유연한 몸과 강한 지구력을 가진 당신은 물살을 가르는 돌고래!',
-            athlete: 'https://i.namu.wiki/i/220px-michael_phelps_london_2012.jpeg' // Michael Phelps
+            athlete: 'https://cdn.pixabay.com/photo/2020/07/04/09/24/swimming-5368541_960_720.png' 
         }
     };
 
@@ -122,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let elementToAnalyze = video.style.display !== 'none' ? video : uploadedImage;
 
-        // Ensure image is fully loaded before analysis
         if (elementToAnalyze.tagName === 'IMG' && !elementToAnalyze.complete) {
              await new Promise(resolve => elementToAnalyze.onload = resolve);
         }
@@ -131,11 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (detections) {
             const expressions = detections.expressions;
-            // Determine dominant expression
             const dominantExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
 
             let resultType;
-            // Map expression to athlete type
             switch (dominantExpression) {
                 case 'happy':
                 case 'surprised':
@@ -145,19 +145,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'sad':
                     resultType = '축구선수 상';
                     break;
-                default: // angry, disgusted, fearful
+                default:
                     resultType = '수영선수 상';
             }
 
             const result = mockResults[resultType];
 
-            // Display results
             setTimeout(() => {
                 athleteImage.src = result.athlete;
                 resultAthleteType.textContent = resultType;
                 resultDescription.textContent = result.description;
                 resultCard.classList.remove('hidden');
-            }, 500); // Short delay for effect
+            }, 500); 
 
         } else {
             initialMessage.textContent = "얼굴을 찾을 수 없습니다. 다른 사진이나 각도를 시도해보세요.";

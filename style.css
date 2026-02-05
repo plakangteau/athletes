@@ -112,11 +112,11 @@ input:checked + .slider:before {
 
 .container {
     display: flex;
-    flex-direction: column; /* 세로 정렬 */
-    align-items: center; /* 가운데 정렬 */
+    flex-direction: column; 
+    align-items: center; 
     gap: 25px;
     width: 100%;
-    max-width: 480px; /* 최대 너비 축소 */
+    max-width: 480px; 
 }
 
 .input-section, .result-section {
@@ -143,7 +143,7 @@ input:checked + .slider:before {
     margin-bottom: 20px;
     position: relative;
     width: 100%;
-    padding-top: 75%; /* 4:3 Aspect Ratio */
+    padding-top: 75%;
     background-color: #000;
 }
 
@@ -160,12 +160,58 @@ input:checked + .slider:before {
     z-index: 10;
 }
 
+.controls-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
 .upload-container {
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 .upload-container p {
-    margin: 0 0 10px 0;
+    margin: 0;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.file-label {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.light-mode .file-label {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.file-label:hover {
+    background-color: #555;
+}
+
+.light-mode .file-label:hover {
+    background-color: #d0d0d0;
+}
+
+#file-name {
+    font-size: 0.9em;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.light-mode #file-name {
+    color: #777;
 }
 
 #analyze-button {
@@ -178,11 +224,19 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: background-color 0.3s, box-shadow 0.3s;
     box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+    width: 100%;
+    max-width: 200px;
 }
 
 #analyze-button:hover {
     background-color: #0056b3;
     box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+}
+
+#analyze-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .result-section h2 {
@@ -215,9 +269,10 @@ input:checked + .slider:before {
 
 #athlete-image {
     width: 100%;
-    max-width: 250px; /* 대표 선수 이미지 크기 */
+    max-width: 250px;
     border-radius: 8px;
     margin-bottom: 15px;
+    background-color: #eee;
 }
 
 #result-athlete-type {

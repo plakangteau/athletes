@@ -12,7 +12,7 @@
 <body class="dark-mode"> <!-- 기본을 다크 모드로 설정 -->
     <header>
         <h1>어떤 운동선수 상일까?</h1>
-        <p>당신의 얼굴은 어떤 운동선수와 닮았을까요? 사진을 올리거나 웹캠을 켜서 확인해보세요!</p>
+        <p>당신의 얼굴은 어떤 운동선수와 닮았을까요? 사진을 올리거나 카메라를 켜서 확인해보세요!</p>
         <div class="theme-switcher">
             <label class="switch">
                 <input type="checkbox" id="theme-switch" checked>
@@ -31,17 +31,21 @@
                     <canvas id="canvas"></canvas>
                     <img id="uploaded-image" src="" alt="Uploaded Image" style="display: none;"/>
                 </div>
-                <div class="upload-container">
-                    <p>또는, 사진을 업로드하세요</p>
-                    <input type="file" id="imageUpload" accept="image/*">
+                <div class="controls-container">
+                    <div class="upload-container">
+                        <p>또는, 사진을 업로드하세요</p>
+                        <label for="imageUpload" class="file-label">파일 선택</label>
+                        <input type="file" id="imageUpload" accept="image/*">
+                        <span id="file-name">선택된 파일 없음</span>
+                    </div>
+                    <button id="analyze-button">분석하기</button>
                 </div>
-                <button id="analyze-button">분석하기</button>
             </div>
 
             <div class="result-section">
                 <h2>분석 결과</h2>
                 <div id="result-card" class="hidden">
-                    <img id="athlete-image" src="" alt="대표 운동선수 이미지">
+                    <img id="athlete-image" src="" alt="대표 운동 이미지">
                     <h3 id="result-athlete-type"></h3>
                     <p id="result-description"></p>
                 </div>
