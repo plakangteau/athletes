@@ -73,49 +73,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Mock Analysis Data with All Athlete Types ---
     const mockResults = {
-        '축구선수 상': {
-            description: '넓은 시야와 빠른 판단력을 가진 당신은 그라운드의 지배자!',
-            athlete: 'https://i.imgur.com/g8e1cR0.png'
-        },
-        '농구선수 상': {
-            description: '높은 점프력과 정확한 슛 감각을 지닌 당신은 코트의 해결사!',
-            athlete: 'https://i.imgur.com/J3GfT5q.png'
-        },
-        '수영선수 상': {
-            description: '유연한 몸과 강한 지구력을 가진 당신은 물살을 가르는 돌고래!',
-            athlete: 'https://i.imgur.com/nLd5gP7.png'
-        },
-        '야구선수 상': {
-            description: '정확한 판단력과 파워를 겸비한 당신은 경기를 뒤집는 9회말의 해결사!',
-            athlete: 'https://i.imgur.com/8c3Sza1.png'
-        },
-        '배구선수 상': {
-            description: '강력한 스파이크와 팀워크를 이끄는 당신은 코트 위의 사령관!',
-            athlete: 'https://i.imgur.com/1v2vYwH.png'
-        },
-        '피겨스케이팅선수 상': {
-            description: '우아한 몸짓과 강철 같은 정신력으로 얼음 위를 수놓는 당신은 빙상의 요정!',
-            athlete: 'https://i.imgur.com/Y3gT4qq.png'
-        },
         '배드민턴선수 상': {
             description: '빠른 순발력과 정교한 컨트롤로 셔틀콕을 지배하는 당신은 네트의 지배자!',
-            athlete: 'https://i.imgur.com/u1fUaYV.png'
+            athlete: 'images/badminton.png'
         },
         '탁구선수 상': {
             description: '순간적인 반응 속도와 회전 마술을 부리는 당신은 작은 테이블 위의 거인!',
-            athlete: 'https://i.imgur.com/nJ1o03B.png'
+            athlete: 'images/ping-pong.png'
         },
         '골프선수 상': {
             description: '고요한 집중력과 완벽한 스윙으로 필드를 정복하는 당신은 녹색의 신사!',
-            athlete: 'https://i.imgur.com/sSffURF.png'
+            athlete: 'images/golf.png'
         },
         '테니스선수 상': {
             description: '강력한 서브와 지치지 않는 체력으로 코트를 누비는 당신은 테니스의 황제!',
-            athlete: 'https://i.imgur.com/vH1N2b4.png'
+            athlete: 'images/tennis.png'
         },
         '육상선수 상': {
             description: '바람을 가르는 스피드와 한계를 넘어서는 의지를 가진 당신은 트랙의 전설!',
-            athlete: 'https://i.imgur.com/dK5uLzD.png'
+            athlete: 'images/track-and-field.png'
         }
     };
 
@@ -140,19 +116,19 @@ document.addEventListener('DOMContentLoaded', () => {
             let resultPool = [];
             switch (dominantExpression) {
                 case 'happy':
-                    resultPool = ['농구선수 상', '배구선수 상', '테니스선수 상'];
+                    resultPool = ['테니스선수 상'];
                     break;
                 case 'surprised':
-                    resultPool = ['야구선수 상', '육상선수 상'];
+                    resultPool = ['육상선수 상'];
                     break;
                 case 'neutral':
-                    resultPool = ['골프선수 상', '피겨스케이팅선수 상', '탁구선수 상'];
+                    resultPool = ['골프선수 상', '탁구선수 상'];
                     break;
                 case 'sad':
                 case 'angry':
                 case 'fearful':
                 case 'disgusted':
-                    resultPool = ['축구선수 상', '수영선수 상', '배드민턴선수 상'];
+                    resultPool = ['배드민턴선수 상'];
                     break;
                 default:
                     resultPool = Object.keys(mockResults); // Fallback to all
