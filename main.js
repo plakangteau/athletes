@@ -15,32 +15,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeLabel = document.querySelector('.theme-label');
 
     // --- Theme Switcher ---
-    function set_theme(dark) {
-        document.body.classList.toggle('dark-mode', dark);
-        document.body.classList.toggle('light-mode', !dark);
-        themeLabel.textContent = dark ? '다크 모드' : '라이트 모드';
-        themeSwitch.checked = dark;
+    function setTheme(isDark) {
+        document.body.classList.toggle('dark-mode', isDark);
+        document.body.classList.toggle('light-mode', !isDark);
+        themeLabel.textContent = isDark ? '다크 모드' : '라이트 모드';
     }
 
     themeSwitch.addEventListener('change', () => {
-        set_theme(themeSwitch.checked);
+        setTheme(themeSwitch.checked);
     });
-    // Set initial theme to dark
-    set_theme(true);
+    // Set initial theme based on checkbox
+    setTheme(themeSwitch.checked);
 
     // --- Face-API Initialization ---
-    Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-        faceapi.nets.faceExpressionNet.loadFromUri('/models')
-    ]).then(startVideo);
+    async function loadModels() {
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+                faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+                faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+                faceapi.nets.faceExpressionNet.loadFromUri('/models')
+            ]);
+            startMedia();
+        } catch (error) {
+            console.error("Error loading models: ", error);
+            initialMessage.textContent = "모델을 로드하는 중 오류가 발생했습니다. 페이지를 새로고침 해주세요.";
+        }
+    }
+    loadModels();
 
     // --- Media Handling ---
+    function startMedia() {
+        startVideo(); // Default to webcam
+    }
+
     function startVideo() {
         video.style.display = 'block';
         uploadedImage.style.display = 'none';
-        navigator.mediaDevices.getUserMedia({ video: {} })
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
             .then(stream => {
                 video.srcObject = stream;
             })
@@ -59,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tracks.forEach(track => track.stop());
                 video.srcObject = null;
             }
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 uploadedImage.src = e.target.result;
@@ -75,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         faceapi.matchDimensions(canvas, displaySize);
 
         setInterval(async () => {
-            if (video.style.display !== 'none') {
+            if (video.style.display !== 'none' && !video.paused) {
                 const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
                 const resizedDetections = faceapi.resizeResults(detections, displaySize);
                 canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
@@ -88,15 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const mockResults = {
         '축구선수 상': {
             description: '넓은 시야와 빠른 판단력을 가진 당신은 그라운드의 지배자!',
-            athlete: 'https://i.namu.wiki/i/Plt-TEaF_9aI1Yk2j2aJm2_S0GSAHl2o7p0Jp3z2QjY2jZgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJg.webp'
+            athlete: 'https://i.namu.wiki/i/Plt-TEaF_9aI1Yk2j2aJm2_S0GSAHl2o7p0Jp3z2QjY2jZgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJgJjJg.webp' // Son Heung-min
         },
         '농구선수 상': {
             description: '높은 점프력과 정확한 슛 감각을 지닌 당신은 코트의 해결사!',
-            athlete: 'https://i.namu.wiki/i/250px-stephen_curry_2022_finals.jpeg' 
+            athlete: 'https://i.namu.wiki/i/250px-stephen_curry_2022_finals.jpeg' // Stephen Curry
         },
         '수영선수 상': {
             description: '유연한 몸과 강한 지구력을 가진 당신은 물살을 가르는 돌고래!',
-            athlete: 'https://i.namu.wiki/i/220px-michael_phelps_london_2012.jpeg'
+            athlete: 'https://i.namu.wiki/i/220px-michael_phelps_london_2012.jpeg' // Michael Phelps
         }
     };
 
@@ -104,10 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
     analyzeButton.addEventListener('click', async () => {
         initialMessage.style.display = 'none';
         resultCard.classList.add('hidden');
+        analyzeButton.disabled = true;
+        analyzeButton.textContent = '분석 중...';
 
         let elementToAnalyze = video.style.display !== 'none' ? video : uploadedImage;
 
-        // Ensure image is loaded before analysis
+        // Ensure image is fully loaded before analysis
         if (elementToAnalyze.tagName === 'IMG' && !elementToAnalyze.complete) {
              await new Promise(resolve => elementToAnalyze.onload = resolve);
         }
@@ -116,9 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (detections) {
             const expressions = detections.expressions;
+            // Determine dominant expression
             const dominantExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
 
             let resultType;
+            // Map expression to athlete type
             switch (dominantExpression) {
                 case 'happy':
                 case 'surprised':
@@ -128,23 +145,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'sad':
                     resultType = '축구선수 상';
                     break;
-                default:
+                default: // angry, disgusted, fearful
                     resultType = '수영선수 상';
             }
 
             const result = mockResults[resultType];
 
-            // Show results with a small delay
+            // Display results
             setTimeout(() => {
                 athleteImage.src = result.athlete;
                 resultAthleteType.textContent = resultType;
                 resultDescription.textContent = result.description;
                 resultCard.classList.remove('hidden');
-            }, 500); 
+            }, 500); // Short delay for effect
 
         } else {
             initialMessage.textContent = "얼굴을 찾을 수 없습니다. 다른 사진이나 각도를 시도해보세요.";
             initialMessage.style.display = 'block';
         }
+
+        analyzeButton.disabled = false;
+        analyzeButton.textContent = '분석하기';
     });
 });

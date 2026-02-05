@@ -1,86 +1,179 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #121212;
-    color: #ffffff;
     margin: 0;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.light-mode {
+    background-color: #f0f0f0;
+    color: #333333;
 }
 
 header {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 900px;
+    position: relative;
 }
 
 header h1 {
-    font-size: 3em;
+    font-size: 2.8em;
     font-weight: 600;
     margin-bottom: 10px;
 }
 
 header p {
-    font-size: 1.2em;
+    font-size: 1.1em;
     color: #aaaaaa;
+}
+
+.dark-mode header p {
+    color: #aaaaaa;
+}
+
+.light-mode header p {
+    color: #666666;
+}
+
+.theme-switcher {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.theme-label {
+    margin-left: 10px;
+    font-size: 0.9em;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.slider.round {
+    border-radius: 28px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
 }
 
 .container {
     display: flex;
-    gap: 40px;
+    flex-direction: column; /* 세로 정렬 */
+    align-items: center; /* 가운데 정렬 */
+    gap: 25px;
     width: 100%;
-    max-width: 1200px;
-    justify-content: center;
+    max-width: 480px; /* 최대 너비 축소 */
 }
 
 .input-section, .result-section {
-    background-color: #1e1e1e;
-    padding: 30px;
+    padding: 20px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    width: 45%;
-    min-width: 500px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.video-container {
-    border: 2px dashed #444;
+.dark-mode .input-section, .dark-mode .result-section {
+    background-color: #1e1e1e;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+
+.light-mode .input-section, .light-mode .result-section {
+    background-color: #ffffff;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.media-container {
+    border: 2px dashed #555;
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 20px;
     position: relative;
-    width: 100%; /* Ensure container has a defined width */
-    height: auto;
-}
-
-#video {
-    display: block;
     width: 100%;
-    height: auto;
+    padding-top: 75%; /* 4:3 Aspect Ratio */
+    background-color: #000;
 }
 
-#canvas {
+#video, #canvas, #uploaded-image {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
+}
+
+#canvas {
+    z-index: 10;
+}
+
+.upload-container {
+    margin-bottom: 20px;
 }
 
 .upload-container p {
     margin: 0 0 10px 0;
 }
 
-input[type="file"] {
-    margin-bottom: 20px;
-}
-
 #analyze-button {
     background-color: #007BFF;
     color: white;
     border: none;
-    padding: 15px 30px;
-    font-size: 1.2em;
+    padding: 12px 25px;
+    font-size: 1.1em;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s, box-shadow 0.3s;
@@ -97,7 +190,6 @@ input[type="file"] {
 }
 
 #result-card {
-    background-color: #2a2a2a;
     padding: 20px;
     border-radius: 10px;
     opacity: 1;
@@ -105,38 +197,57 @@ input[type="file"] {
     transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 
+.dark-mode #result-card {
+    background-color: #2a2a2a;
+}
+
+.light-mode #result-card {
+    background-color: #fafafa;
+}
+
 #result-card.hidden {
     opacity: 0;
     visibility: hidden;
-    height: 0; /* Also hide the space it takes */
-    padding: 0 20px; /* Avoid text overflow during transition */
+    height: 0;
+    padding: 0 20px;
     overflow: hidden;
 }
 
-#result-image {
+#athlete-image {
     width: 100%;
-    max-width: 300px;
+    max-width: 250px; /* 대표 선수 이미지 크기 */
     border-radius: 8px;
     margin-bottom: 15px;
 }
 
 #result-athlete-type {
-    font-size: 2em;
-    color: #00E676;
+    font-size: 1.8em;
     margin: 0;
+    color: #00E676;
+}
+
+.light-mode #result-athlete-type {
+    color: #008a4d;
 }
 
 #result-description {
-    font-size: 1.1em;
+    font-size: 1em;
 }
 
-@media (max-width: 900px) {
-    .container {
-        flex-direction: column;
-        align-items: center;
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 2.2em;
+    }
+    header p {
+        font-size: 1em;
+    }
+    .theme-switcher {
+        position: static;
+        margin-top: 15px;
+        justify-content: center;
     }
 
-    .input-section, .result-section {
-        width: 80%;
+    .container {
+        padding: 0 15px;
     }
 }

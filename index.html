@@ -9,19 +9,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script defer src="face-api.min.js"></script>
 </head>
-<body>
+<body class="dark-mode"> <!-- 기본을 다크 모드로 설정 -->
     <header>
         <h1>어떤 운동선수 상일까?</h1>
         <p>당신의 얼굴은 어떤 운동선수와 닮았을까요? 사진을 올리거나 웹캠을 켜서 확인해보세요!</p>
+        <div class="theme-switcher">
+            <label class="switch">
+                <input type="checkbox" id="theme-switch" checked>
+                <span class="slider round"></span>
+            </label>
+            <span class="theme-label">다크 모드</span>
+        </div>
     </header>
 
     <main>
         <div class="container">
             <div class="input-section">
                 <h2>얼굴 인식</h2>
-                <div class="video-container">
-                    <video id="video" width="600" height="450" autoplay muted></video>
+                <div class="media-container">
+                    <video id="video" width="600" height="450" autoplay muted playsinline></video>
                     <canvas id="canvas"></canvas>
+                    <img id="uploaded-image" src="" alt="Uploaded Image" style="display: none;"/>
                 </div>
                 <div class="upload-container">
                     <p>또는, 사진을 업로드하세요</p>
@@ -33,7 +41,7 @@
             <div class="result-section">
                 <h2>분석 결과</h2>
                 <div id="result-card" class="hidden">
-                    <img id="result-image" src="" alt="운동선수 이미지">
+                    <img id="athlete-image" src="" alt="대표 운동선수 이미지">
                     <h3 id="result-athlete-type"></h3>
                     <p id="result-description"></p>
                 </div>
