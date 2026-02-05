@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
                 faceapi.nets.faceExpressionNet.loadFromUri('/models')
             ]);
-            startMedia();
+            // Don't start camera automatically, wait for user action.
+            initialMessage.textContent = "카메라를 켜거나 사진을 업로드하여 분석을 시작하세요.";
         } catch (error) {
             console.error("Error loading models: ", error);
             initialMessage.textContent = "모델을 로드하는 중 오류가 발생했습니다. 페이지를 새로고침 해주세요.";
@@ -45,33 +46,21 @@ document.addEventListener('DOMContentLoaded', () => {
     loadModels();
 
     // --- Media Handling ---
-    function startMedia() {
-        startVideo();
+    // Function to stop existing video streams
+    function stopMediaTracks(stream) {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
     }
 
-    function startVideo() {
-        video.style.display = 'block';
-        uploadedImage.style.display = 'none';
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                console.error("Error accessing camera: ", err);
-                initialMessage.textContent = "카메라에 접근할 수 없습니다. 권한을 확인해주세요.";
-            });
-    }
-
+    // The `capture` attribute in HTML will prefer the camera on mobile.
+    // This function handles the file selection, whether from camera or files.
     imageUpload.addEventListener('change', async () => {
         if (imageUpload.files && imageUpload.files[0]) {
-            if (video.srcObject) {
-                const stream = video.srcObject;
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-                video.srcObject = null;
-            }
+            stopMediaTracks(video.srcObject); // Stop any active camera stream
             
-            fileName.textContent = imageUpload.files[0].name;
+            const file = imageUpload.files[0];
+            fileName.textContent = file.name;
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -80,56 +69,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 uploadedImage.style.display = 'block';
                 canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
             };
-            reader.readAsDataURL(imageUpload.files[0]);
+            reader.readAsDataURL(file);
         } else {
              fileName.textContent = '선택된 파일 없음';
         }
     });
 
-    video.addEventListener('play', () => {
-        const displaySize = { width: video.clientWidth, height: video.clientHeight };
-        faceapi.matchDimensions(canvas, displaySize);
-
-        setInterval(async () => {
-            if (video.style.display !== 'none' && !video.paused) {
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-                const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-                faceapi.draw.drawDetections(canvas, resizedDetections);
-            }
-        }, 100);
-    });
+    // Simplified logic: Remove automatic camera start and live analysis.
+    // Analysis is now only triggered by the "Analyze" button.
 
     // --- Mock Analysis Data with Cartoon Images ---
     const mockResults = {
         '축구선수 상': {
             description: '넓은 시야와 빠른 판단력을 가진 당신은 그라운드의 지배자!',
-            athlete: 'https://cdn.pixabay.com/photo/2020/03/10/18/14/soccer-4920032_960_720.png' 
+            athlete: 'https://i.imgur.com/g8e1cR0.png' // Soccer cartoon
         },
         '농구선수 상': {
             description: '높은 점프력과 정확한 슛 감각을 지닌 당신은 코트의 해결사!',
-            athlete: 'https://cdn.pixabay.com/photo/2013/07/12/17/44/basketball-152295_960_720.png'
+            athlete: 'https://i.imgur.com/J3GfT5q.png' // Basketball cartoon
         },
         '수영선수 상': {
             description: '유연한 몸과 강한 지구력을 가진 당신은 물살을 가르는 돌고래!',
-            athlete: 'https://cdn.pixabay.com/photo/2020/07/04/09/24/swimming-5368541_960_720.png' 
+            athlete: 'https://i.imgur.com/nLd5gP7.png' // Swimming cartoon
         }
     };
 
     // --- "Analyze" Button Logic ---
     analyzeButton.addEventListener('click', async () => {
+        if (!uploadedImage.src || uploadedImage.style.display === 'none') {
+            initialMessage.textContent = "분석할 사진이 없습니다. 먼저 사진을 업로드해주세요.";
+            return;
+        }
+
         initialMessage.style.display = 'none';
         resultCard.classList.add('hidden');
         analyzeButton.disabled = true;
         analyzeButton.textContent = '분석 중...';
 
-        let elementToAnalyze = video.style.display !== 'none' ? video : uploadedImage;
-
-        if (elementToAnalyze.tagName === 'IMG' && !elementToAnalyze.complete) {
-             await new Promise(resolve => elementToAnalyze.onload = resolve);
+        // Ensure image is fully loaded before analysis
+        if (!uploadedImage.complete) {
+             await new Promise(resolve => uploadedImage.onload = resolve);
         }
 
-        const detections = await faceapi.detectSingleFace(elementToAnalyze, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+        const detections = await faceapi.detectSingleFace(uploadedImage, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
 
         if (detections) {
             const expressions = detections.expressions;
@@ -152,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = mockResults[resultType];
 
             setTimeout(() => {
-                athleteImage.src = result.athlete;
+                athleteImage.src = result.athlete; 
                 resultAthleteType.textContent = resultType;
                 resultDescription.textContent = result.description;
                 resultCard.classList.remove('hidden');

@@ -273,7 +273,11 @@ input[type="file"] {
     border-radius: 8px;
     margin-bottom: 15px;
     background-color: #eee;
+    display: block; /* Ensures the image is displayed as a block element */
+    margin-left: auto;
+    margin-right: auto;
 }
+
 
 #result-athlete-type {
     font-size: 1.8em;
@@ -287,6 +291,18 @@ input[type="file"] {
 
 #result-description {
     font-size: 1em;
+}
+
+footer {
+    margin-top: 40px;
+    padding: 10px 20px;
+    font-size: 0.8em;
+    color: #888;
+    max-width: 600px;
+}
+
+.light-mode footer {
+    color: #555;
 }
 
 @media (max-width: 600px) {
